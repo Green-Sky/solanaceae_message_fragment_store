@@ -23,3 +23,15 @@ target_link_libraries(solanaceae_message_fragment_store PUBLIC
 
 ########################################
 
+add_executable(convert_message_object_store
+	./convert_frag_to_obj.cpp
+)
+
+target_link_libraries(convert_message_object_store PUBLIC
+	solanaceae_object_store
+	solanaceae_object_store_backend_filesystem
+	solanaceae_message_fragment_store
+)
+
+########################################
+
