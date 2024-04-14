@@ -55,8 +55,8 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 SOLANA_PLUGIN_EXPORT void solana_plugin_stop(void) {
 	std::cout << "PLUGIN " << plugin_name << " STOP()\n";
 
-	g_fsb.reset();
 	g_mfs.reset();
+	g_fsb.reset();
 }
 
 SOLANA_PLUGIN_EXPORT float solana_plugin_tick(float time_delta) {
