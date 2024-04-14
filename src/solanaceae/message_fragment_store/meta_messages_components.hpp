@@ -30,5 +30,5 @@ namespace Fragment::Components {
 	struct MessagesContact : public ObjComp::MessagesContact {};
 } // Fragment::Components
 
-#include "./meta_messages_components.hpp"
+#include "./meta_messages_components_id.inl"
 
