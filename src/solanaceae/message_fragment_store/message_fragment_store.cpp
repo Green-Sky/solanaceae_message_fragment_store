@@ -583,7 +583,7 @@ float MessageFragmentStore::tick(float) {
 	// bc ~range~ msgreg will be marked dirty and checked next tick
 	const bool had_events = !_event_check_queue.empty();
 	for (size_t i = 0; i < 10 && !_event_check_queue.empty(); i++) {
-		std::cout << "MFS: event check\n";
+		//std::cout << "MFS: event check\n";
 		auto fh = _event_check_queue.front().fid;
 		auto c = _event_check_queue.front().c;
 		_event_check_queue.pop_front();
@@ -622,7 +622,7 @@ float MessageFragmentStore::tick(float) {
 		}
 	}
 	if (had_events) {
-		std::cout << "MFS: event check none\n";
+		//std::cout << "MFS: event check none\n";
 		return 0.05f; // only check events, even if non where hit
 	}
 
