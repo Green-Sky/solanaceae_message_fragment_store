@@ -12,7 +12,7 @@
 #include <iostream>
 
 static std::unique_ptr<MessageFragmentStore> g_mfs = nullptr;
-static std::unique_ptr<backend::FilesystemStorage> g_fsb = nullptr;
+static std::unique_ptr<Backends::FilesystemStorage> g_fsb = nullptr;
 
 constexpr const char* plugin_name = "MessageFragmentStore";
 
@@ -41,7 +41,7 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 
 		// static store, could be anywhere tho
 		// construct with fetched dependencies
-		g_fsb = std::make_unique<backend::FilesystemStorage>(*os, "test2_message_store/"); // TODO: use config?
+		g_fsb = std::make_unique<Backends::FilesystemStorage>(*os, "test2_message_store/"); // TODO: use config?
 		g_mfs = std::make_unique<MessageFragmentStore>(*cr, *rmm, *os, *g_fsb, *msnj);
 
 		// register types

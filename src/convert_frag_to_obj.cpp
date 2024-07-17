@@ -30,8 +30,8 @@ int main(int argc, const char** argv) {
 	ObjectStore2 os_src;
 	ObjectStore2 os_dst;
 
-	backend::FilesystemStorage fsb_src(os_src, argv[1]);
-	backend::FilesystemStorage fsb_dst(os_dst, argv[2]);
+	Backends::FilesystemStorage fsb_src(os_src, argv[1]);
+	Backends::FilesystemStorage fsb_dst(os_dst, argv[2]);
 
 	Contact3Registry cr; // dummy
 	RegistryMessageModel rmm(cr); // dummy
@@ -47,16 +47,16 @@ int main(int argc, const char** argv) {
 	// hookup events
 	struct EventListener : public ObjectStoreEventI {
 		ObjectStore2& _os_src;
-		backend::FilesystemStorage& _fsb_src;
+		Backends::FilesystemStorage& _fsb_src;
 
 		ObjectStore2& _os_dst;
-		backend::FilesystemStorage& _fsb_dst;
+		Backends::FilesystemStorage& _fsb_dst;
 
 		EventListener(
 			ObjectStore2& os_src,
-			backend::FilesystemStorage& fsb_src,
+			Backends::FilesystemStorage& fsb_src,
 			ObjectStore2& os_dst,
-			backend::FilesystemStorage& fsb_dst
+			Backends::FilesystemStorage& fsb_dst
 		) :
 			_os_src(os_src),
 			_fsb_src(fsb_src),
