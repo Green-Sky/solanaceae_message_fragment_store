@@ -94,7 +94,7 @@ void MessageFragmentStore::handleMessage(const Message3Handle& m) {
 	}
 
 	// TODO: use fid, seving full fuid for every message consumes alot of memory (and heap frag)
-	if (!m.all_of<Message::Components::Obj>()) {
+	if (!m.all_of<Message::Components::MFSObj>()) {
 		std::cout << "MFS: new msg missing Object\n";
 		if (!m.registry()->ctx().contains<Message::Contexts::OpenFragments>()) {
 			m.registry()->ctx().emplace<Message::Contexts::OpenFragments>();
@@ -232,7 +232,7 @@ void MessageFragmentStore::handleMessage(const Message3Handle& m) {
 			return;
 		}
 
-		m.emplace_or_replace<Message::Components::Obj>(fragment_id);
+		m.emplace_or_replace<Message::Components::MFSObj>(fragment_id);
 
 		// in this case we know the fragment needs an update
 		for (const auto& it : _frag_save_queue) {
@@ -245,7 +245,7 @@ void MessageFragmentStore::handleMessage(const Message3Handle& m) {
 		return; // done
 	}
 
-	const auto msg_fh = _os.objectHandle(m.get<Message::Components::Obj>().o);
+	const auto msg_fh = _os.objectHandle(m.get<Message::Components::MFSObj>().o);
 	if (!static_cast<bool>(msg_fh)) {
 		std::cerr << "MFS error: fid in message is invalid\n";
 		return; // TODO: properly handle this case
@@ -336,7 +336,7 @@ void MessageFragmentStore::loadFragment(Message3Registry& reg, ObjectHandle fh) 
 			}
 		}
 
-		new_real_msg.emplace_or_replace<Message::Components::Obj>(fh);
+		new_real_msg.emplace_or_replace<Message::Components::MFSObj>(fh);
 
 		// dup check (hacky, specific to protocols)
 		Message3 dup_msg {entt::null};
@@ -401,7 +401,7 @@ bool MessageFragmentStore::syncFragToStorage(ObjectHandle fh, Message3Registry& 
 	for (auto it = msg_view.rbegin(), it_end = msg_view.rend(); it != it_end; it++) {
 		const Message3 m = *it;
 
-		if (!reg.all_of<Message::Components::Obj, Message::Components::ContactFrom, Message::Components::ContactTo>(m)) {
+		if (!reg.all_of<Message::Components::MFSObj, Message::Components::ContactFrom, Message::Components::ContactTo>(m)) {
 			continue;
 		}
 
@@ -411,7 +411,7 @@ bool MessageFragmentStore::syncFragToStorage(ObjectHandle fh, Message3Registry& 
 			continue;
 		}
 
-		if (_frag_save_queue.front().id != reg.get<Message::Components::Obj>(m).o) {
+		if (_frag_save_queue.front().id != reg.get<Message::Components::MFSObj>(m).o) {
 			continue; // not ours
 		}
 

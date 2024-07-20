@@ -24,7 +24,7 @@ namespace Message::Components {
 	// unused, consumes too much memory (highly compressable)
 	//using FUID = FragComp::ID;
 
-	struct Obj {
+	struct MFSObj {
 		// message fragment's object
 		Object o {entt::null};
 	};
@@ -37,7 +37,7 @@ namespace Message::Components {
 	// every tick we check all cursers for this tag and continue
 	// and remove once no fragment could be loaded anymore
 	// (internal)
-	struct TagCurserUnsatisfied {};
+	struct MFSCurserUnsatisfiedTag {};
 
 } // Message::Components
 
