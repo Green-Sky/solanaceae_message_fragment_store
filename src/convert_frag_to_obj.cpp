@@ -5,6 +5,8 @@
 #include <solanaceae/message_fragment_store/message_fragment_store.hpp>
 #include <solanaceae/message3/message_serializer.hpp>
 
+#include <solanaceae/message3/registry_message_model_impl.hpp>
+
 #include <solanaceae/util/utils.hpp>
 
 #include <nlohmann/json.hpp>
@@ -34,7 +36,7 @@ int main(int argc, const char** argv) {
 	Backends::FilesystemStorage fsb_dst(os_dst, argv[2]);
 
 	Contact3Registry cr; // dummy
-	RegistryMessageModel rmm(cr); // dummy
+	RegistryMessageModelImpl rmm(cr); // dummy
 	// they only exist for the serializers (for now)
 	// TODO: version
 	MessageSerializerNJ msnj_src{cr, {}, {}};

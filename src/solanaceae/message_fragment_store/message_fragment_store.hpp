@@ -51,7 +51,7 @@ class MessageFragmentStore : public RegistryMessageModelEventI, public ObjectSto
 
 	protected:
 		Contact3Registry& _cr;
-		RegistryMessageModel& _rmm;
+		RegistryMessageModelI& _rmm;
 		ObjectStore2& _os;
 		StorageBackendI& _sb;
 		MessageSerializerNJ& _scnj;
@@ -87,7 +87,7 @@ class MessageFragmentStore : public RegistryMessageModelEventI, public ObjectSto
 	public:
 		MessageFragmentStore(
 			Contact3Registry& cr,
-			RegistryMessageModel& rmm,
+			RegistryMessageModelI& rmm,
 			ObjectStore2& os,
 			StorageBackendI& sb,
 			MessageSerializerNJ& scnj

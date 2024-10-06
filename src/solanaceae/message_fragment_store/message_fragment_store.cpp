@@ -481,7 +481,7 @@ bool MessageFragmentStore::syncFragToStorage(ObjectHandle fh, Message3Registry& 
 
 MessageFragmentStore::MessageFragmentStore(
 	Contact3Registry& cr,
-	RegistryMessageModel& rmm,
+	RegistryMessageModelI& rmm,
 	ObjectStore2& os,
 	StorageBackendI& sb,
 	MessageSerializerNJ& scnj
