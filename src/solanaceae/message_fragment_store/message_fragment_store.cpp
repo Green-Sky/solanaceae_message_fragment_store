@@ -485,10 +485,12 @@ MessageFragmentStore::MessageFragmentStore(
 	ObjectStore2& os,
 	StorageBackendI& sb,
 	MessageSerializerNJ& scnj
-) : _cr(cr), _rmm(rmm), _os(os), _sb(sb), _scnj(scnj) {
-	_rmm.subscribe(this, RegistryMessageModel_Event::message_construct);
-	_rmm.subscribe(this, RegistryMessageModel_Event::message_updated);
-	_rmm.subscribe(this, RegistryMessageModel_Event::message_destroy);
+) : _cr(cr), _rmm(rmm), _rmm_sr(_rmm.newSubRef(this)), _os(os), _os_sr(_os.newSubRef(this)), _sb(sb), _scnj(scnj) {
+	_rmm_sr
+		.subscribe(RegistryMessageModel_Event::message_construct)
+		.subscribe(RegistryMessageModel_Event::message_updated)
+		.subscribe(RegistryMessageModel_Event::message_destroy)
+	;
 
 	// TODO: move somewhere else?
 	auto& sjc = _os.registry().ctx().get<SerializerJsonCallbacks<Object>>();
@@ -505,8 +507,10 @@ MessageFragmentStore::MessageFragmentStore(
 	sjc.registerSerializer<FragComp::MessagesContact>(sjc.component_get_json<ObjComp::MessagesContact>);
 	sjc.registerDeSerializer<FragComp::MessagesContact>(sjc.component_emplace_or_replace_json<ObjComp::MessagesContact>);
 
-	_os.subscribe(this, ObjectStore_Event::object_construct);
-	_os.subscribe(this, ObjectStore_Event::object_update);
+	_os_sr
+		.subscribe(ObjectStore_Event::object_construct)
+		.subscribe(ObjectStore_Event::object_update)
+	;
 }
 
 MessageFragmentStore::~MessageFragmentStore(void) {

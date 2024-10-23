@@ -52,7 +52,9 @@ class MessageFragmentStore : public RegistryMessageModelEventI, public ObjectSto
 	protected:
 		Contact3Registry& _cr;
 		RegistryMessageModelI& _rmm;
+		RegistryMessageModelI::SubscriptionReference _rmm_sr;
 		ObjectStore2& _os;
+		ObjectStore2::SubscriptionReference _os_sr;
 		StorageBackendI& _sb;
 		MessageSerializerNJ& _scnj;
 
