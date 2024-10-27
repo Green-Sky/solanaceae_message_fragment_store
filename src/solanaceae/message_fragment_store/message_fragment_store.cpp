@@ -88,12 +88,13 @@ void MessageFragmentStore::handleMessage(const Message3Handle& m) {
 	}
 
 	// TODO: this is bad, we need a non persistence tag instead
-	if (!m.any_of<Message::Components::MessageText>()) {
+	if (!m.any_of<Message::Components::MessageText, Message::Components::MessageFileObject>()) {
 		// skip everything else for now
 		return;
 	}
+	// TODO: check if file object has id
 
-	// TODO: use fid, seving full fuid for every message consumes alot of memory (and heap frag)
+	// TODO: use fid, saving full fuid for every message consumes alot of memory (and heap frag)
 	if (!m.all_of<Message::Components::MFSObj>()) {
 		std::cout << "MFS: new msg missing Object\n";
 		if (!m.registry()->ctx().contains<Message::Contexts::OpenFragments>()) {
@@ -235,6 +236,7 @@ void MessageFragmentStore::handleMessage(const Message3Handle& m) {
 		m.emplace_or_replace<Message::Components::MFSObj>(fragment_id);
 
 		// in this case we know the fragment needs an update
+		// TODO: refactor extract
 		for (const auto& it : _frag_save_queue) {
 			if (it.id == fragment_id) {
 				// already in queue
@@ -258,8 +260,14 @@ void MessageFragmentStore::handleMessage(const Message3Handle& m) {
 	auto& fid_open = m.registry()->ctx().get<Message::Contexts::OpenFragments>().open_frags;
 
 	if (fid_open.contains(msg_fh)) {
-		// TODO: dedup events
 		// TODO: cooldown per fragsave
+		// TODO: refactor extract
+		for (const auto& it : _frag_save_queue) {
+			if (it.id == msg_fh) {
+				// already in queue
+				return; // done
+			}
+		}
 		_frag_save_queue.push_back({Message::getTimeMS(), msg_fh, m.registry()});
 		return;
 	}
@@ -275,6 +283,12 @@ void MessageFragmentStore::handleMessage(const Message3Handle& m) {
 // assumes not loaded frag
 // need update from frag
 void MessageFragmentStore::loadFragment(Message3Registry& reg, ObjectHandle fh) {
+	if (!fh) {
+		std::cerr << "MFS error: loadFragment called with invalid object!!!\n";
+		assert(false);
+		return;
+	}
+
 	std::cout << "MFS: loadFragment\n";
 	// version HAS to be set, or we just fail
 	if (!fh.all_of<ObjComp::MessagesVersion>()) {
@@ -407,11 +421,12 @@ bool MessageFragmentStore::syncFragToStorage(ObjectHandle fh, Message3Registry& 
 
 		// filter: require msg for now
 		// this will be removed in the future
-		if (!reg.any_of<Message::Components::MessageText/*, Message::Components::Transfer::FileInfo*/>(m)) {
+		//if (!reg.any_of<Message::Components::MessageText>(m)) {
+		if (!reg.any_of<Message::Components::MessageText, Message::Components::MessageFileObject>(m)) {
 			continue;
 		}
 
-		if (_frag_save_queue.front().id != reg.get<Message::Components::MFSObj>(m).o) {
+		if (fh != reg.get<Message::Components::MFSObj>(m).o) {
 			continue; // not ours
 		}
 
@@ -518,7 +533,9 @@ MessageFragmentStore::~MessageFragmentStore(void) {
 		auto fh = _frag_save_queue.front().id;
 		auto* reg = _frag_save_queue.front().reg;
 		assert(reg != nullptr);
+		_fs_ignore_event = true;
 		syncFragToStorage(fh, *reg);
+		_fs_ignore_event = false;
 		_frag_save_queue.pop_front(); // pop unconditionally
 	}
 }
@@ -586,7 +603,7 @@ float MessageFragmentStore::tick(float) {
 	// only checks if it collides with ranges, not adjacent
 	// bc ~range~ msgreg will be marked dirty and checked next tick
 	const bool had_events = !_event_check_queue.empty();
-	for (size_t i = 0; i < 10 && !_event_check_queue.empty(); i++) {
+	for (size_t i = 0; i < 50 && !_event_check_queue.empty(); i++) {
 		//std::cout << "MFS: event check\n";
 		auto fh = _event_check_queue.front().fid;
 		auto c = _event_check_queue.front().c;

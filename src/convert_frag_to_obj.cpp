@@ -39,9 +39,9 @@ int main(int argc, const char** argv) {
 	RegistryMessageModelImpl rmm(cr); // dummy
 	// they only exist for the serializers (for now)
 	// TODO: version
-	MessageSerializerNJ msnj_src{cr, {}, {}};
+	MessageSerializerNJ msnj_src{cr, os_src, {}, {}};
 	MessageFragmentStore mfs_src(cr, rmm, os_src, fsb_src, msnj_src);
-	MessageSerializerNJ msnj_dst{cr, {}, {}};
+	MessageSerializerNJ msnj_dst{cr, os_dst, {}, {}};
 	MessageFragmentStore mfs_dst(cr, rmm, os_dst, fsb_dst, msnj_dst);
 
 	// add message fragment store too (adds meta?)
