@@ -11,8 +11,8 @@
 #include <limits>
 #include <iostream>
 
-static std::unique_ptr<MessageFragmentStore> g_mfs = nullptr;
 static std::unique_ptr<Backends::FilesystemStorage> g_fsb = nullptr;
+static std::unique_ptr<MessageFragmentStore> g_mfs = nullptr;
 
 constexpr const char* plugin_name = "MessageFragmentStore";
 
@@ -62,6 +62,7 @@ SOLANA_PLUGIN_EXPORT void solana_plugin_stop(void) {
 }
 
 SOLANA_PLUGIN_EXPORT float solana_plugin_tick(float time_delta) {
+	// HACK
 	static bool scan_triggered {false};
 	if (!scan_triggered) {
 		g_fsb->scanAsync();

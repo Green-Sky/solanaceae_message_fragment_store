@@ -81,6 +81,7 @@ void MessageFragmentStore::handleMessage(const Message3Handle& m) {
 	}
 
 	_potentially_dirty_contacts.emplace(m.registry()->ctx().get<Contact3>()); // always mark dirty here
+	_touched_contacts.emplace(m.registry()->ctx().get<Contact3>());
 	if (m.any_of<Message::Components::ViewCurserBegin, Message::Components::ViewCurserEnd>()) {
 		// not an actual message, but we probalby need to check and see if we need to load fragments
 		//std::cout << "MFS: new or updated curser\n";
@@ -93,6 +94,7 @@ void MessageFragmentStore::handleMessage(const Message3Handle& m) {
 		return;
 	}
 	// TODO: check if file object has id
+
 
 	// TODO: use fid, saving full fuid for every message consumes alot of memory (and heap frag)
 	if (!m.all_of<Message::Components::MFSObj>()) {
@@ -538,6 +540,15 @@ MessageFragmentStore::~MessageFragmentStore(void) {
 		_fs_ignore_event = false;
 		_frag_save_queue.pop_front(); // pop unconditionally
 	}
+
+	for (const auto c : _touched_contacts) {
+		auto* mr_ptr = static_cast<const RegistryMessageModelI&>(_rmm).get(c);
+		if (mr_ptr != nullptr) {
+			mr_ptr->ctx().erase<Message::Contexts::OpenFragments>();
+			mr_ptr->ctx().erase<Message::Contexts::ContactFragments>();
+			mr_ptr->ctx().erase<Message::Contexts::LoadedContactFragments>();
+		}
+	}
 }
 
 // checks range against all cursers in msgreg
@@ -872,6 +883,7 @@ bool MessageFragmentStore::onEvent(const ObjectStore::Events::ObjectConstruct& e
 		// TODO: this is an erroious path
 		return false;
 	}
+	_touched_contacts.emplace(frag_contact);
 
 	if (!msg_reg->ctx().contains<Message::Contexts::ContactFragments>()) {
 		msg_reg->ctx().emplace<Message::Contexts::ContactFragments>();
@@ -928,6 +940,7 @@ bool MessageFragmentStore::onEvent(const ObjectStore::Events::ObjectUpdate& e) {
 		// TODO: this is an erroious path
 		return false;
 	}
+	_touched_contacts.emplace(frag_contact);
 
 	if (!msg_reg->ctx().contains<Message::Contexts::ContactFragments>()) {
 		msg_reg->ctx().emplace<Message::Contexts::ContactFragments>();

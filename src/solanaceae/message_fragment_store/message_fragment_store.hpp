@@ -86,6 +86,9 @@ class MessageFragmentStore : public RegistryMessageModelEventI, public ObjectSto
 		// so we need to keep them dirty until nothing was loaded.
 		entt::dense_set<Contact3> _potentially_dirty_contacts;
 
+		// for cleaning up the ctx vars we create
+		entt::dense_set<Contact3> _touched_contacts;
+
 	public:
 		MessageFragmentStore(
 			Contact3Registry& cr,
