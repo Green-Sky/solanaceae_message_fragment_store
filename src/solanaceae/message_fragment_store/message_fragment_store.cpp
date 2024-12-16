@@ -89,7 +89,8 @@ void MessageFragmentStore::handleMessage(const Message3Handle& m) {
 	}
 
 	// TODO: this is bad, we need a non persistence tag instead
-	if (!m.any_of<Message::Components::MessageText, Message::Components::MessageFileObject>()) {
+	//if (!m.any_of<Message::Components::MessageText, Message::Components::MessageFileObject>()) {
+	if (!m.any_of<Message::Components::MessageText>()) { // fix file message object storage first!
 		// skip everything else for now
 		return;
 	}
@@ -423,8 +424,9 @@ bool MessageFragmentStore::syncFragToStorage(ObjectHandle fh, Message3Registry& 
 
 		// filter: require msg for now
 		// this will be removed in the future
-		//if (!reg.any_of<Message::Components::MessageText>(m)) {
-		if (!reg.any_of<Message::Components::MessageText, Message::Components::MessageFileObject>(m)) {
+		if (!reg.any_of<Message::Components::MessageText>(m)) {
+		// fix message file objects first
+		//if (!reg.any_of<Message::Components::MessageText, Message::Components::MessageFileObject>(m)) {
 			continue;
 		}
 
