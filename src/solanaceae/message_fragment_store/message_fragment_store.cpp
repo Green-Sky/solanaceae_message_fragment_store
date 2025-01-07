@@ -5,6 +5,7 @@
 #include <solanaceae/object_store/serializer_json.hpp>
 
 #include <solanaceae/util/utils.hpp>
+#include <solanaceae/util/time.hpp>
 
 #include <solanaceae/contact/components.hpp>
 #include <solanaceae/message3/components.hpp>
@@ -246,7 +247,7 @@ void MessageFragmentStore::handleMessage(const Message3Handle& m) {
 				return; // done
 			}
 		}
-		_frag_save_queue.push_back({Message::getTimeMS(), {_os.registry(), fragment_id}, m.registry()});
+		_frag_save_queue.push_back({getTimeMS(), {_os.registry(), fragment_id}, m.registry()});
 		return; // done
 	}
 
@@ -271,7 +272,7 @@ void MessageFragmentStore::handleMessage(const Message3Handle& m) {
 				return; // done
 			}
 		}
-		_frag_save_queue.push_back({Message::getTimeMS(), msg_fh, m.registry()});
+		_frag_save_queue.push_back({getTimeMS(), msg_fh, m.registry()});
 		return;
 	}
 
@@ -408,7 +409,7 @@ void MessageFragmentStore::loadFragment(Message3Registry& reg, ObjectHandle fh) 
 }
 
 bool MessageFragmentStore::syncFragToStorage(ObjectHandle fh, Message3Registry& reg) {
-	auto& ftsrange = fh.get_or_emplace<ObjComp::MessagesTSRange>(Message::getTimeMS(), Message::getTimeMS());
+	auto& ftsrange = fh.get_or_emplace<ObjComp::MessagesTSRange>(getTimeMS(), getTimeMS());
 
 	auto j = nlohmann::json::array();
 
@@ -596,7 +597,7 @@ static bool rangeVisible(uint64_t range_begin, uint64_t range_end, const Message
 }
 
 float MessageFragmentStore::tick(float) {
-	const auto ts_now = Message::getTimeMS();
+	const auto ts_now = getTimeMS();
 	// sync dirty fragments here
 	if (!_frag_save_queue.empty()) {
 		// wait 10sec before saving
