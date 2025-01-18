@@ -1,6 +1,8 @@
 #include "./message_fragment_store.hpp"
 
 #include "./internal_mfs_contexts.hpp"
+#include "solanaceae/object_store/meta_components.hpp"
+#include "solanaceae/object_store/object_store.hpp"
 
 #include <solanaceae/object_store/serializer_json.hpp>
 
@@ -41,12 +43,12 @@ namespace ObjectStore::Components {
 } // ObjectStore::Component
 
 static nlohmann::json loadFromStorageNJ(ObjectHandle oh) {
-	assert(oh.all_of<ObjComp::Ephemeral::Backend>());
-	auto* backend = oh.get<ObjComp::Ephemeral::Backend>().ptr;
+	assert(oh.all_of<ObjComp::Ephemeral::BackendAtomic>());
+	auto* backend = oh.get<ObjComp::Ephemeral::BackendAtomic>().ptr;
 	assert(backend != nullptr);
 
 	std::vector<uint8_t> tmp_buffer;
-	std::function<StorageBackendI::read_from_storage_put_data_cb> cb = [&tmp_buffer](const ByteSpan buffer) {
+	std::function<StorageBackendIAtomic::read_from_storage_put_data_cb> cb = [&tmp_buffer](const ByteSpan buffer) {
 		tmp_buffer.insert(tmp_buffer.end(), buffer.cbegin(), buffer.cend());
 	};
 	if (!backend->read(oh, cb)) {
@@ -184,7 +186,9 @@ void MessageFragmentStore::handleMessage(const Message3Handle& m) {
 		if (!_os.registry().valid(fragment_id)) {
 			const auto new_uuid = _session_uuid_gen();
 			_fs_ignore_event = true;
-			auto fh = _sb.newObject(ByteSpan{new_uuid});
+			auto fh = _sbm.newObject(ByteSpan{new_uuid});
+			// TODO: the backend should have done that?
+			fh.emplace_or_replace<ObjComp::Ephemeral::BackendAtomic>(&_sba);
 			_fs_ignore_event = false;
 			if (!static_cast<bool>(fh)) {
 				std::cout << "MFS error: failed to create new object for message\n";
@@ -482,8 +486,8 @@ bool MessageFragmentStore::syncFragToStorage(ObjectHandle fh, Message3Registry& 
 		std::cerr << "MFS error: unknown object version\n";
 		assert(false);
 	}
-	assert(fh.all_of<ObjComp::Ephemeral::Backend>());
-	auto* backend = fh.get<ObjComp::Ephemeral::Backend>().ptr;
+	assert(fh.all_of<ObjComp::Ephemeral::BackendAtomic>());
+	auto* backend = fh.get<ObjComp::Ephemeral::BackendAtomic>().ptr;
 	if (backend->write(fh, {reinterpret_cast<const uint8_t*>(data_to_save.data()), data_to_save.size()})) {
 		// TODO: make this better, should this be called on fail? should this be called before sync? (prob not)
 		_fs_ignore_event = true;
@@ -503,9 +507,10 @@ MessageFragmentStore::MessageFragmentStore(
 	Contact3Registry& cr,
 	RegistryMessageModelI& rmm,
 	ObjectStore2& os,
-	StorageBackendI& sb,
+	StorageBackendIMeta& sbm,
+	StorageBackendIAtomic& sba,
 	MessageSerializerNJ& scnj
-) : _cr(cr), _rmm(rmm), _rmm_sr(_rmm.newSubRef(this)), _os(os), _os_sr(_os.newSubRef(this)), _sb(sb), _scnj(scnj) {
+) : _cr(cr), _rmm(rmm), _rmm_sr(_rmm.newSubRef(this)), _os(os), _os_sr(_os.newSubRef(this)), _sbm(sbm), _sba(sba), _scnj(scnj) {
 	_rmm_sr
 		.subscribe(RegistryMessageModel_Event::message_construct)
 		.subscribe(RegistryMessageModel_Event::message_updated)

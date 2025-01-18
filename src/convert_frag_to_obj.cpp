@@ -40,9 +40,9 @@ int main(int argc, const char** argv) {
 	// they only exist for the serializers (for now)
 	// TODO: version
 	MessageSerializerNJ msnj_src{cr, os_src, {}, {}};
-	MessageFragmentStore mfs_src(cr, rmm, os_src, fsb_src, msnj_src);
+	MessageFragmentStore mfs_src(cr, rmm, os_src, fsb_src, fsb_src, msnj_src);
 	MessageSerializerNJ msnj_dst{cr, os_dst, {}, {}};
-	MessageFragmentStore mfs_dst(cr, rmm, os_dst, fsb_dst, msnj_dst);
+	MessageFragmentStore mfs_dst(cr, rmm, os_dst, fsb_dst, fsb_dst, msnj_dst);
 
 	// add message fragment store too (adds meta?)
 
@@ -78,7 +78,7 @@ int main(int argc, const char** argv) {
 				// technically we could just copy the file, but meh
 				// read src and write dst data
 				std::vector<uint8_t> tmp_buffer;
-				std::function<StorageBackendI::read_from_storage_put_data_cb> cb = [&tmp_buffer](const ByteSpan buffer) {
+				std::function<StorageBackendIAtomic::read_from_storage_put_data_cb> cb = [&tmp_buffer](const ByteSpan buffer) {
 					tmp_buffer.insert(tmp_buffer.end(), buffer.cbegin(), buffer.cend());
 				};
 				if (!_fsb_src.read(e.e, cb)) {
@@ -140,7 +140,7 @@ int main(int argc, const char** argv) {
 					}
 				}
 
-				static_cast<StorageBackendI&>(_fsb_dst).write(oh, ByteSpan{tmp_buffer});
+				static_cast<StorageBackendIAtomic&>(_fsb_dst).write(oh, ByteSpan{tmp_buffer});
 
 				//assert(std::filesystem::file_size(e.e.get<ObjComp::Ephemeral::FilePath>().path) == std::filesystem::file_size(oh.get<ObjComp::Ephemeral::FilePath>().path));
 

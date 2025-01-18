@@ -55,7 +55,8 @@ class MessageFragmentStore : public RegistryMessageModelEventI, public ObjectSto
 		RegistryMessageModelI::SubscriptionReference _rmm_sr;
 		ObjectStore2& _os;
 		ObjectStore2::SubscriptionReference _os_sr;
-		StorageBackendI& _sb;
+		StorageBackendIMeta& _sbm;
+		StorageBackendIAtomic& _sba;
 		MessageSerializerNJ& _scnj;
 
 		bool _fs_ignore_event {false};
@@ -94,7 +95,8 @@ class MessageFragmentStore : public RegistryMessageModelEventI, public ObjectSto
 			Contact3Registry& cr,
 			RegistryMessageModelI& rmm,
 			ObjectStore2& os,
-			StorageBackendI& sb,
+			StorageBackendIMeta& sbm,
+			StorageBackendIAtomic& sba,
 			MessageSerializerNJ& scnj
 		);
 		virtual ~MessageFragmentStore(void);
