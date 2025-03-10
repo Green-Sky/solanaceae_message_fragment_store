@@ -1,5 +1,7 @@
 #include <solanaceae/plugin/solana_plugin_v1.h>
 
+#include <solanaceae/contact/contact_store_i.hpp>
+
 #include <solanaceae/message3/message_serializer.hpp>
 #include <solanaceae/object_store/backends/filesystem_storage.hpp>
 #include <solanaceae/message_fragment_store/message_fragment_store.hpp>
