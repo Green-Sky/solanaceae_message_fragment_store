@@ -28,6 +28,7 @@ add_executable(convert_message_object_store
 )
 
 target_link_libraries(convert_message_object_store PUBLIC
+	solanaceae_contact_impl
 	solanaceae_object_store
 	solanaceae_object_store_backend_filesystem
 	solanaceae_message_fragment_store

@@ -12,7 +12,7 @@
 #include <entt/container/dense_map.hpp>
 #include <entt/container/dense_set.hpp>
 
-#include <solanaceae/contact/contact_model3.hpp>
+#include <solanaceae/contact/fwd.hpp>
 #include <solanaceae/message3/registry_message_model.hpp>
 
 #include <deque>
@@ -50,7 +50,7 @@ class MessageFragmentStore : public RegistryMessageModelEventI, public ObjectSto
 		static constexpr const char* version {"3"};
 
 	protected:
-		Contact3Registry& _cr;
+		ContactStore4I& _cs;
 		RegistryMessageModelI& _rmm;
 		RegistryMessageModelI::SubscriptionReference _rmm_sr;
 		ObjectStore2& _os;
@@ -78,21 +78,21 @@ class MessageFragmentStore : public RegistryMessageModelEventI, public ObjectSto
 
 		struct ECQueueEntry final {
 			ObjectHandle fid;
-			Contact3 c;
+			Contact4 c;
 		};
 		std::deque<ECQueueEntry> _event_check_queue;
 
 		// range changed or fragment loaded.
 		// we only load a limited number of fragments at once,
 		// so we need to keep them dirty until nothing was loaded.
-		entt::dense_set<Contact3> _potentially_dirty_contacts;
+		entt::dense_set<Contact4> _potentially_dirty_contacts;
 
 		// for cleaning up the ctx vars we create
-		entt::dense_set<Contact3> _touched_contacts;
+		entt::dense_set<Contact4> _touched_contacts;
 
 	public:
 		MessageFragmentStore(
-			Contact3Registry& cr,
+			ContactStore4I& cr,
 			RegistryMessageModelI& rmm,
 			ObjectStore2& os,
 			StorageBackendIMeta& sbm,

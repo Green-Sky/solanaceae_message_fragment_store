@@ -34,7 +34,7 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 	}
 
 	try {
-		auto* cr = PLUG_RESOLVE_INSTANCE_VERSIONED(Contact3Registry, "1");
+		auto* cs = PLUG_RESOLVE_INSTANCE(ContactStore4I);
 		auto* rmm = PLUG_RESOLVE_INSTANCE(RegistryMessageModelI);
 		auto* os = PLUG_RESOLVE_INSTANCE(ObjectStore2);
 		auto* msnj = PLUG_RESOLVE_INSTANCE(MessageSerializerNJ);
@@ -42,7 +42,7 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 		// static store, could be anywhere tho
 		// construct with fetched dependencies
 		g_fsb = std::make_unique<Backends::FilesystemStorage>(*os, "test2_message_store/"); // TODO: use config?
-		g_mfs = std::make_unique<MessageFragmentStore>(*cr, *rmm, *os, *g_fsb, *g_fsb, *msnj);
+		g_mfs = std::make_unique<MessageFragmentStore>(*cs, *rmm, *os, *g_fsb, *g_fsb, *msnj);
 
 		// register types
 		PLUG_PROVIDE_INSTANCE(MessageFragmentStore, plugin_name, g_mfs.get());

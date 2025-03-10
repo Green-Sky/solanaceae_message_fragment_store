@@ -1,3 +1,4 @@
+#include <solanaceae/contact/contact_store_impl.hpp>
 #include <solanaceae/object_store/object_store.hpp>
 #include <solanaceae/object_store/backends/filesystem_storage.hpp>
 #include <solanaceae/object_store/meta_components.hpp>
@@ -35,14 +36,14 @@ int main(int argc, const char** argv) {
 	Backends::FilesystemStorage fsb_src(os_src, argv[1]);
 	Backends::FilesystemStorage fsb_dst(os_dst, argv[2]);
 
-	Contact3Registry cr; // dummy
-	RegistryMessageModelImpl rmm(cr); // dummy
+	ContactStore4Impl cs; // dummy
+	RegistryMessageModelImpl rmm(cs); // dummy
 	// they only exist for the serializers (for now)
 	// TODO: version
-	MessageSerializerNJ msnj_src{cr, os_src, {}, {}};
-	MessageFragmentStore mfs_src(cr, rmm, os_src, fsb_src, fsb_src, msnj_src);
-	MessageSerializerNJ msnj_dst{cr, os_dst, {}, {}};
-	MessageFragmentStore mfs_dst(cr, rmm, os_dst, fsb_dst, fsb_dst, msnj_dst);
+	MessageSerializerNJ msnj_src{cs, os_src, {}, {}};
+	MessageFragmentStore mfs_src(cs, rmm, os_src, fsb_src, fsb_src, msnj_src);
+	MessageSerializerNJ msnj_dst{cs, os_dst, {}, {}};
+	MessageFragmentStore mfs_dst(cs, rmm, os_dst, fsb_dst, fsb_dst, msnj_dst);
 
 	// add message fragment store too (adds meta?)
 

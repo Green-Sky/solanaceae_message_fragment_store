@@ -9,6 +9,8 @@
 #include <solanaceae/util/utils.hpp>
 #include <solanaceae/util/time.hpp>
 
+#include <solanaceae/contact/contact_store_i.hpp>
+
 #include <solanaceae/contact/components.hpp>
 #include <solanaceae/message3/components.hpp>
 #include <solanaceae/message3/contact_components.hpp>
@@ -37,7 +39,7 @@ namespace ObjectStore::Components {
 
 		// cache the contact for faster lookups
 		struct MessagesContactEntity {
-			Contact3 e {entt::null};
+			Contact4 e {entt::null};
 		};
 	}
 } // ObjectStore::Component
@@ -83,8 +85,8 @@ void MessageFragmentStore::handleMessage(const Message3Handle& m) {
 		return; // we only handle msg with ts
 	}
 
-	_potentially_dirty_contacts.emplace(m.registry()->ctx().get<Contact3>()); // always mark dirty here
-	_touched_contacts.emplace(m.registry()->ctx().get<Contact3>());
+	_potentially_dirty_contacts.emplace(m.registry()->ctx().get<Contact4>()); // always mark dirty here
+	_touched_contacts.emplace(m.registry()->ctx().get<Contact4>());
 	if (m.any_of<Message::Components::ViewCurserBegin, Message::Components::ViewCurserEnd>()) {
 		// not an actual message, but we probalby need to check and see if we need to load fragments
 		//std::cout << "MFS: new or updated curser\n";
@@ -206,9 +208,9 @@ void MessageFragmentStore::handleMessage(const Message3Handle& m) {
 			new_ts_range.end = msg_ts;
 
 			{
-				const auto msg_reg_contact = m.registry()->ctx().get<Contact3>();
-				if (_cr.all_of<Contact::Components::ID>(msg_reg_contact)) {
-					fh.emplace<ObjComp::MessagesContact>(_cr.get<Contact::Components::ID>(msg_reg_contact).data);
+				const auto msg_reg_contact = m.registry()->ctx().get<Contact4>();
+				if (_cs.registry().all_of<Contact::Components::ID>(msg_reg_contact)) {
+					fh.emplace<ObjComp::MessagesContact>(_cs.registry().get<Contact::Components::ID>(msg_reg_contact).data);
 				} else {
 					// ? rage quit?
 				}
@@ -364,10 +366,10 @@ void MessageFragmentStore::loadFragment(Message3Registry& reg, ObjectHandle fh) 
 		Message3 dup_msg {entt::null};
 		{
 			// get comparator from contact
-			if (reg.ctx().contains<Contact3>()) {
-				const auto c = reg.ctx().get<Contact3>();
-				if (_cr.all_of<Contact::Components::MessageIsSame>(c)) {
-					auto& comp = _cr.get<Contact::Components::MessageIsSame>(c).comp;
+			if (reg.ctx().contains<Contact4>()) {
+				const auto c = reg.ctx().get<Contact4>();
+				if (_cs.registry().all_of<Contact::Components::MessageIsSame>(c)) {
+					auto& comp = _cs.registry().get<Contact::Components::MessageIsSame>(c).comp;
 					// walking EVERY existing message OOF
 					// this needs optimizing
 					for (const Message3 other_msg : reg.view<Message::Components::Timestamp, Message::Components::ContactFrom, Message::Components::ContactTo>()) {
@@ -504,13 +506,13 @@ bool MessageFragmentStore::syncFragToStorage(ObjectHandle fh, Message3Registry& 
 }
 
 MessageFragmentStore::MessageFragmentStore(
-	Contact3Registry& cr,
+	ContactStore4I& cs,
 	RegistryMessageModelI& rmm,
 	ObjectStore2& os,
 	StorageBackendIMeta& sbm,
 	StorageBackendIAtomic& sba,
 	MessageSerializerNJ& scnj
-) : _cr(cr), _rmm(rmm), _rmm_sr(_rmm.newSubRef(this)), _os(os), _os_sr(_os.newSubRef(this)), _sbm(sbm), _sba(sba), _scnj(scnj) {
+) : _cs(cs), _rmm(rmm), _rmm_sr(_rmm.newSubRef(this)), _os(os), _os_sr(_os.newSubRef(this)), _sbm(sbm), _sba(sba), _scnj(scnj) {
 	_rmm_sr
 		.subscribe(RegistryMessageModel_Event::message_construct)
 		.subscribe(RegistryMessageModel_Event::message_updated)
@@ -867,17 +869,17 @@ bool MessageFragmentStore::onEvent(const ObjectStore::Events::ObjectConstruct& e
 
 	// TODO: are we sure it is a *new* fragment?
 
-	Contact3 frag_contact = entt::null;
+	Contact4 frag_contact = entt::null;
 	{ // get contact
 		const auto& frag_contact_id = e.e.get<ObjComp::MessagesContact>().id;
 		// TODO: id lookup table, this is very inefficent
-		for (const auto& [c_it, id_it] : _cr.view<Contact::Components::ID>().each()) {
+		for (const auto& [c_it, id_it] : _cs.registry().view<Contact::Components::ID>().each()) {
 			if (frag_contact_id == id_it.data) {
 				frag_contact = c_it;
 				break;
 			}
 		}
-		if (!_cr.valid(frag_contact)) {
+		if (!_cs.registry().valid(frag_contact)) {
 			// unkown contact
 			return false;
 		}
@@ -917,23 +919,23 @@ bool MessageFragmentStore::onEvent(const ObjectStore::Events::ObjectUpdate& e) {
 	// its also possible it was tagged as empty
 	e.e.remove<ObjComp::Ephemeral::MessagesEmptyTag>();
 
-	Contact3 frag_contact = entt::null;
+	Contact4 frag_contact = entt::null;
 	{ // get contact
 		// probably cached already
 		if (e.e.all_of<ObjComp::Ephemeral::MessagesContactEntity>()) {
 			frag_contact = e.e.get<ObjComp::Ephemeral::MessagesContactEntity>().e;
 		}
 
-		if (!_cr.valid(frag_contact)) {
+		if (!_cs.registry().valid(frag_contact)) {
 			const auto& frag_contact_id = e.e.get<ObjComp::MessagesContact>().id;
 			// TODO: id lookup table, this is very inefficent
-			for (const auto& [c_it, id_it] : _cr.view<Contact::Components::ID>().each()) {
+			for (const auto& [c_it, id_it] : _cs.registry().view<Contact::Components::ID>().each()) {
 				if (frag_contact_id == id_it.data) {
 					frag_contact = c_it;
 					break;
 				}
 			}
-			if (!_cr.valid(frag_contact)) {
+			if (!_cs.registry().valid(frag_contact)) {
 				// unkown contact
 				return false;
 			}
