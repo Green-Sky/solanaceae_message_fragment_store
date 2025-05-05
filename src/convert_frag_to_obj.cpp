@@ -1,6 +1,6 @@
 #include <solanaceae/contact/contact_store_impl.hpp>
 #include <solanaceae/object_store/object_store.hpp>
-#include <solanaceae/object_store/backends/filesystem_storage.hpp>
+#include <solanaceae/object_store/backends/filesystem_storage_atomic.hpp>
 #include <solanaceae/object_store/meta_components.hpp>
 #include <solanaceae/object_store/serializer_json.hpp>
 #include <solanaceae/message_fragment_store/message_fragment_store.hpp>
@@ -33,8 +33,8 @@ int main(int argc, const char** argv) {
 	ObjectStore2 os_src;
 	ObjectStore2 os_dst;
 
-	Backends::FilesystemStorage fsb_src(os_src, argv[1]);
-	Backends::FilesystemStorage fsb_dst(os_dst, argv[2]);
+	Backends::FilesystemStorageAtomic fsb_src(os_src, argv[1]);
+	Backends::FilesystemStorageAtomic fsb_dst(os_dst, argv[2]);
 
 	ContactStore4Impl cs; // dummy
 	RegistryMessageModelImpl rmm(cs); // dummy
@@ -50,16 +50,16 @@ int main(int argc, const char** argv) {
 	// hookup events
 	struct EventListener : public ObjectStoreEventI {
 		ObjectStore2& _os_src;
-		Backends::FilesystemStorage& _fsb_src;
+		Backends::FilesystemStorageAtomic& _fsb_src;
 
 		ObjectStore2& _os_dst;
-		Backends::FilesystemStorage& _fsb_dst;
+		Backends::FilesystemStorageAtomic& _fsb_dst;
 
 		EventListener(
 			ObjectStore2& os_src,
-			Backends::FilesystemStorage& fsb_src,
+			Backends::FilesystemStorageAtomic& fsb_src,
 			ObjectStore2& os_dst,
-			Backends::FilesystemStorage& fsb_dst
+			Backends::FilesystemStorageAtomic& fsb_dst
 		) :
 			_os_src(os_src),
 			_fsb_src(fsb_src),

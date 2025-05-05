@@ -3,7 +3,7 @@
 #include <solanaceae/contact/contact_store_i.hpp>
 
 #include <solanaceae/message3/message_serializer.hpp>
-#include <solanaceae/object_store/backends/filesystem_storage.hpp>
+#include <solanaceae/object_store/backends/filesystem_storage_atomic.hpp>
 #include <solanaceae/message_fragment_store/message_fragment_store.hpp>
 
 #include <entt/entt.hpp>
@@ -13,7 +13,7 @@
 #include <limits>
 #include <iostream>
 
-static std::unique_ptr<Backends::FilesystemStorage> g_fsb = nullptr;
+static std::unique_ptr<Backends::FilesystemStorageAtomic> g_fsb = nullptr;
 static std::unique_ptr<MessageFragmentStore> g_mfs = nullptr;
 
 constexpr const char* plugin_name = "MessageFragmentStore";
@@ -43,7 +43,7 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 
 		// static store, could be anywhere tho
 		// construct with fetched dependencies
-		g_fsb = std::make_unique<Backends::FilesystemStorage>(*os, "test2_message_store/"); // TODO: use config?
+		g_fsb = std::make_unique<Backends::FilesystemStorageAtomic>(*os, "test2_message_store/"); // TODO: use config?
 		g_mfs = std::make_unique<MessageFragmentStore>(*cs, *rmm, *os, *g_fsb, *g_fsb, *msnj);
 
 		// register types
