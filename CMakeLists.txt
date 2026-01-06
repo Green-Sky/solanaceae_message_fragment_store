@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18...3.24 FATAL_ERROR)
 
 # cmake setup begin
 project(solanaceae_message_fragment_store)
